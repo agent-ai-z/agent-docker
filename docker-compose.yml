@@ -1,7 +1,7 @@
 services:
 
-  algho-agent-redis:
-    container_name: algho-agent-redis
+  agent-redis:
+    container_name: agent-redis
     restart: always
     image: redis:7
     ports:
@@ -16,9 +16,9 @@ services:
     networks:
       - agent-network
 
-  algho-agent-embeddings:
+  agent-embeddings:
     # https://github.com/huggingface/text-embeddings-inference#docker
-    container_name: algho-agent-embeddings
+    container_name: agent-embeddings
     platform: linux/amd64
     image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.6
     restart: always
@@ -32,8 +32,8 @@ services:
       - agent-network
     command: ["--model-id", "intfloat/multilingual-e5-large"]
 
-  algho-agent-qdrant:
-    container_name: algho-agent-qdrant
+  agent-qdrant:
+    container_name: agent-qdrant
     platform: linux/amd64
     image: qdrant/qdrant:v1.13.4
     restart: always
@@ -50,8 +50,8 @@ services:
     networks:
       - agent-network
 
-  algho-agent-chromadb:
-    container_name: algho-agent-chromadb
+  agent-chromadb:
+    container_name: agent-chromadb
     platform: linux/amd64
     image: chromadb/chroma:0.6.4.dev379
     volumes:

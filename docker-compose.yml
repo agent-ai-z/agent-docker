@@ -1,0 +1,78 @@
+services:
+
+  algho-agent-redis:
+    container_name: algho-agent-redis
+    restart: always
+    image: redis:7
+    ports:
+      - 26379:6379
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks:
+      - agent-network
+
+  algho-agent-embeddings:
+    # https://github.com/huggingface/text-embeddings-inference#docker
+    container_name: algho-agent-embeddings
+    platform: linux/amd64
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.6
+    restart: always
+    environment:
+      MODEL_ID: intfloat/multilingual-e5-large
+    volumes:
+      - agent-embedding-data:/data
+    ports:
+      - "18080:80"
+    networks:
+      - agent-network
+    command: ["--model-id", "intfloat/multilingual-e5-large"]
+
+  algho-agent-qdrant:
+    container_name: algho-agent-qdrant
+    platform: linux/amd64
+    image: qdrant/qdrant:v1.13.4
+    restart: always
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    expose:
+      - 6333
+      - 6334
+      - 6335
+    volumes:
+      - qdrant-data:/qdrant/storage:z
+      - ./qdrant/config.yml:/qdrant/config.yml:ro
+    networks:
+      - agent-network
+
+  algho-agent-chromadb:
+    container_name: algho-agent-chromadb
+    platform: linux/amd64
+    image: chromadb/chroma:0.6.4.dev379
+    volumes:
+      - chroma_data:/data
+    ports:
+      - "8001:8000"
+    networks:
+      - agent-network
+
+volumes:
+  qdrant-data:
+  chroma_data:
+  agent-embedding-data:
+  redis-data:
+  agent-memory-db:
+
+networks:
+  agent-network:
+    name: agent-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.1.0/24
